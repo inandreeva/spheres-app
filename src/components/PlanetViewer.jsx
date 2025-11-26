@@ -198,9 +198,9 @@ const PlanetViewer = ({ selectedPlanet }) => {
         scene.background = null
         sceneRef.current = scene
 
-        // Camera setup - optimal view for compact planet in card
-        const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 1000) // Good FOV for compact planet
-        camera.position.set(0, 0, 8) // Closer for compact planet
+        // Camera setup - adjusted for larger planet
+        const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 1000)
+        camera.position.set(0, 0, 18) // Move back so 3x planet fits but stays large
         camera.lookAt(0, 0, 0) // Look directly at planet center
         cameraRef.current = camera
 
@@ -243,9 +243,9 @@ const PlanetViewer = ({ selectedPlanet }) => {
         // Get current planet
         const currentPlanet = planets[selectedPlanet]
 
-        // Create planet - compact size for card layout
-        const radius = 2.2 // More compact size to fit better
-        const geometry = new THREE.SphereGeometry(radius, 32, 32)
+        // Create planet - bigger size for more impressive view
+        const radius = 6.6 // 3x bigger than before (was 2.2)
+        const geometry = new THREE.SphereGeometry(radius, 64, 64)
 
         let material
         if (currentPlanet.texture && textureLoaderRef.current) {

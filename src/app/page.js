@@ -124,8 +124,8 @@ export default function Home() {
             <Card className="w-full max-w-4xl p-3 mb-2 bg-transparent border-none shadow-none">
                 <div className="flex flex-col gap-4">
                     <div className="text-center">
-                        <h1 className="text-2xl font-bold mb-1">
-                            Solar System Explorer
+                        <h1 className="text-4xl md:text-6xl font-bold mb-2">
+                            {currentPlanet.name}
                         </h1>
                         <p className="text-sm text-muted-foreground">
                             Click on planets to learn more about them

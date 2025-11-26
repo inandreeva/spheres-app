@@ -12,40 +12,28 @@ const PlanetViewer = ({ selectedPlanet }) => {
 
     // Function to update renderer size
     const updateRendererSize = useCallback(() => {
-        if (canvasRef.current && cameraRef.current && rendererRef.current) {
-            const canvas = canvasRef.current
-            const rect = canvas.getBoundingClientRect()
-            const width = rect.width || window.innerWidth
-            const height = rect.height || window.innerHeight
+        if (!canvasRef.current || !cameraRef.current || !rendererRef.current)
+            return
 
-            if (width > 0 && height > 0) {
-                const aspectRatio = width / height
+        const canvas = canvasRef.current
+        const rect = canvas.getBoundingClientRect()
+        const width = rect.width || window.innerWidth
+        const height = rect.height || window.innerHeight
 
-                // Update camera aspect ratio
-                cameraRef.current.aspect = aspectRatio
-                cameraRef.current.updateProjectionMatrix()
+        if (!width || !height) return
 
-                // Update renderer size
-                rendererRef.current.setSize(width, height)
+        const aspectRatio = width / height
 
-                // Re-render if we have a scene
-                if (sceneRef.current) {
-                    rendererRef.current.render(
-                        sceneRef.current,
-                        cameraRef.current
-                    )
-                }
+        // Update camera aspect ratio
+        cameraRef.current.aspect = aspectRatio
+        cameraRef.current.updateProjectionMatrix()
 
-                console.log(
-                    `📐 Updated canvas size: ${width}x${height}, aspect: ${aspectRatio.toFixed(
-                        2
-                    )}, camera Y: ${cameraRef.current.position.y.toFixed(2)}`
-                )
-            } else {
-                console.log("Canvas has zero size")
-            }
-        } else {
-            console.log("Missing refs for update")
+        // Update renderer size
+        rendererRef.current.setSize(width, height)
+
+        // Re-render if we have a scene
+        if (sceneRef.current) {
+            rendererRef.current.render(sceneRef.current, cameraRef.current)
         }
     }, [])
 
@@ -179,12 +167,7 @@ const PlanetViewer = ({ selectedPlanet }) => {
     ]
 
     useEffect(() => {
-        if (!canvasRef.current) {
-            console.log("Canvas ref not available")
-            return
-        }
-
-        console.log("Initializing Three.js renderer")
+        if (!canvasRef.current) return
 
         // Initialize Three.js
         const renderer = new THREE.WebGLRenderer({
@@ -211,9 +194,6 @@ const PlanetViewer = ({ selectedPlanet }) => {
         // Texture loader
         const textureLoader = new THREE.TextureLoader()
         textureLoaderRef.current = textureLoader
-
-        // Initial render
-        renderer.render(scene, camera)
 
         return () => {
             // Cleanup
@@ -253,20 +233,9 @@ const PlanetViewer = ({ selectedPlanet }) => {
                 const texturePath = currentPlanet.texture.startsWith("/")
                     ? currentPlanet.texture
                     : "/" + currentPlanet.texture
-                console.log(
-                    "🔄 Loading texture for",
-                    currentPlanet.name,
-                    ":",
-                    texturePath
-                )
-
                 const texture = textureLoaderRef.current.load(
                     texturePath,
                     () => {
-                        console.log(
-                            "✅ Texture loaded successfully for",
-                            currentPlanet.name
-                        )
                         // Update size and re-render after texture loads
                         if (updateRendererSizeRef.current)
                             updateRendererSizeRef.current()
@@ -277,9 +246,8 @@ const PlanetViewer = ({ selectedPlanet }) => {
                     },
                     (error) => {
                         console.error(
-                            "❌ Texture failed to load for",
+                            "Texture failed to load for",
                             currentPlanet.name,
-                            ":",
                             error
                         )
                         // Force re-render with fallback color
@@ -292,13 +260,9 @@ const PlanetViewer = ({ selectedPlanet }) => {
                     transparent: false,
                 })
                 texture.colorSpace = THREE.SRGBColorSpace // Correct color space
-                console.log(
-                    "🎨 Created material with texture for",
-                    currentPlanet.name
-                )
             } catch (error) {
                 console.warn(
-                    `❌ Failed to load texture for ${currentPlanet.name}:`,
+                    `Failed to load texture for ${currentPlanet.name}:`,
                     error
                 )
                 material = new THREE.MeshBasicMaterial({
@@ -307,12 +271,6 @@ const PlanetViewer = ({ selectedPlanet }) => {
                 })
             }
         } else {
-            console.log(
-                "🎨 No texture for",
-                currentPlanet.name,
-                ", using color:",
-                currentPlanet.color
-            )
             material = new THREE.MeshBasicMaterial({
                 color: currentPlanet.color,
                 transparent: false,
@@ -323,7 +281,6 @@ const PlanetViewer = ({ selectedPlanet }) => {
         mesh.position.set(0, 0, 0) // Centered, camera adjusts for aspect ratio
 
         scene.add(mesh)
-        console.log("Planet mesh added to scene:", mesh)
 
         // Add rotation animation
         const animate = () => {
@@ -331,7 +288,6 @@ const PlanetViewer = ({ selectedPlanet }) => {
             renderer.render(scene, camera)
             requestAnimationFrame(animate)
         }
-        console.log("Starting animation loop")
         animate()
 
         // Add Saturn's rings if this is Saturn
@@ -351,7 +307,6 @@ const PlanetViewer = ({ selectedPlanet }) => {
                     opacity: 0.9,
                     side: THREE.DoubleSide,
                 })
-                console.log("✅ Loaded Saturn ring texture")
             } catch (error) {
                 // Fallback: create gradient-like rings
                 ringMaterial = new THREE.MeshBasicMaterial({
@@ -360,7 +315,6 @@ const PlanetViewer = ({ selectedPlanet }) => {
                     opacity: 0.8,
                     side: THREE.DoubleSide,
                 })
-                console.log("🎨 Using procedural rings for Saturn")
             }
 
             const rings = new THREE.Mesh(ringGeometry, ringMaterial)
@@ -368,18 +322,12 @@ const PlanetViewer = ({ selectedPlanet }) => {
             rings.rotation.z = 0.1 // Slight tilt for realism
             rings.position.set(0, 0, 0) // Same position as planet
             scene.add(rings)
-
-            console.log("🪐 Added rings to Saturn")
         }
 
-        console.log("🎨 Rendered planet:", currentPlanet.name)
-
         // Force size update after rendering
-        setTimeout(() => {
-            if (updateRendererSizeRef.current) {
-                updateRendererSizeRef.current()
-            }
-        }, 100)
+        if (updateRendererSizeRef.current) {
+            updateRendererSizeRef.current()
+        }
     }, [selectedPlanet])
 
     // Update canvas size and camera aspect ratio after layout

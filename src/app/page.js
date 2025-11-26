@@ -137,14 +137,15 @@ export default function Home() {
                         {planets.map((planet, index) => (
                             <Button
                                 key={planet.name}
-                                variant={
-                                    selectedPlanet === index
-                                        ? "default"
-                                        : "outline"
-                                }
+                                variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedPlanet(index)}
-                                className="text-xs h-7 px-2"
+                                className={
+                                    "h-8 px-3 text-xs md:text-sm tracking-wide uppercase " +
+                                    (selectedPlanet === index
+                                        ? "border-primary text-primary"
+                                        : "")
+                                }
                             >
                                 {planet.name}
                             </Button>
